@@ -111,6 +111,58 @@ def update_cots20201_email_settings(account):
         sleep(5)
 
 
+def update_qa(account):
+    """
+    Update the Q&A of webinar(s).
+
+    See https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarupdate
+    """
+    payload = {
+        "settings": {
+            "question_and_answer": {
+                "enable": True,
+                "allow_anonymous_questions": False,
+                "answer_questions": "all",
+                "attendees_can_upvote": True,
+                "attendees_can_comment": True,
+            }
+        }
+    }
+
+    for wid in account.webinar_ids:
+        print(f"Update q&a settings for {wid} ...", end=" ")
+        res = requests.patch(
+            ZOOM_API_BASE_URL + "/webinars/{wid}".format(wid=wid),
+            json=payload,
+            headers=account.headers,
+        )
+        print(res.status_code)
+        sleep(5)
+
+
+def create_poll(account):
+    """
+    Create poll for the webinar(s).
+
+    See https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarpollcreate
+    """
+    payload = {
+        "title": "Where are you attending this panel from?",
+        "anonymous": False,
+        "poll_type": 1,
+        "questions": [{"name": "", "type": "single", "answers": ["A", "B"]}],
+    }
+    for wid in account.webinar_ids:
+        print(f"Update email settings for {wid} ...", end=" ")
+        res = requests.patch(
+            ZOOM_API_BASE_URL + "/webinars/{wid}/polls".format(wid=wid),
+            json=payload,
+            headers=account.headers,
+        )
+        print(res.status_code)
+        sleep(5)
+
+
 if __name__ == "__main__":
     from pathlib import Path
     import sys
@@ -120,7 +172,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "op",
         help="Operation to perform.",
-        choices=("update-registration-question", "update-email-setting", "create-poll"),
+        choices=(
+            "update-registration-question",
+            "update-email-setting",
+            "create-poll",
+            "update-qa-setting",
+        ),
     )
     parser.add_argument(
         "--config", help="Path to the configuration file.", default="./config.yaml"
@@ -157,3 +214,7 @@ if __name__ == "__main__":
             for acc in accounts:
                 pass
                 # create_cots2021_poll(acc)
+        elif args.op == "update-qa-setting":
+            print("Updating Q&A setting")
+            for acc in accounts:
+                update_qa(acc)
