@@ -1,0 +1,8 @@
+- token: token1
+  webinar-ids:
+    - "1234"
+    - "5678"
+- token: token2
+  webinar-ids:
+    - "91011"
+    - "12131"
